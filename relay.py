@@ -18,6 +18,7 @@ Optional:
     PORT                   Defaults to 8080.
 """
 
+import base64
 import hashlib
 import hmac
 import logging
@@ -50,6 +51,8 @@ def _require_env(name: str) -> str:
 
 
 READ_AI_SIGNING_KEY = _require_env("READ_AI_SIGNING_KEY")
+# Read.ai provides the signing key as base64; the HMAC secret is the decoded bytes.
+READ_AI_SIGNING_KEY_BYTES = base64.b64decode(READ_AI_SIGNING_KEY)
 ROUTINE_FIRE_URL = _require_env("ROUTINE_FIRE_URL")
 ROUTINE_TOKEN = _require_env("ROUTINE_TOKEN")
 
@@ -73,7 +76,7 @@ def verify_read_ai_signature(raw_body: bytes, signature_header: str) -> bool:
     compare it against X-Read-Signature using a constant-time check."""
     if not signature_header:
         return False
-    expected = hmac.new(READ_AI_SIGNING_KEY.encode("utf-8"), raw_body, hashlib.sha256).hexdigest()
+    expected = hmac.new(READ_AI_SIGNING_KEY_BYTES, raw_body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, signature_header)
 
 

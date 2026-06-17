@@ -6,6 +6,7 @@ Usage:
     python test_webhook.py
 """
 
+import base64
 import hashlib
 import hmac
 import json
@@ -36,7 +37,7 @@ payload = {
 }
 
 body = json.dumps(payload).encode("utf-8")
-signature = hmac.new(SIGNING_KEY.encode("utf-8"), body, hashlib.sha256).hexdigest()
+signature = hmac.new(base64.b64decode(SIGNING_KEY), body, hashlib.sha256).hexdigest()
 
 resp = requests.post(
     RELAY_URL,

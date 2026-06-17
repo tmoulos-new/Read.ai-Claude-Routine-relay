@@ -9,7 +9,7 @@ Read.ai signs its webhooks with its own signing key, which your server verifies 
 ## How it works
 
 1. Read.ai POSTs a meeting report to this relay's `/readai-webhook` endpoint.
-2. The relay recomputes the HMAC-SHA256 signature over the raw body using `READ_AI_SIGNING_KEY` and compares it to the `X-Read-Signature` header. A mismatch is rejected with 401, before anything is forwarded.
+2. The relay recomputes the HMAC-SHA256 signature over the raw body using the base64-decoded `READ_AI_SIGNING_KEY` and compares it to the `X-Read-Signature` header. A mismatch is rejected with 401, before anything is forwarded.
 3. On a match, it formats the meeting title, summary, topics, action items, and key questions into a plain-text string (the routine's `text` field only accepts a literal string, not JSON).
 4. It POSTs that string to `ROUTINE_FIRE_URL` with `Authorization: Bearer ROUTINE_TOKEN` and the required `anthropic-beta` header, which starts a new routine session.
 5. It returns 200 to Read.ai either way (logging any forwarding failure), so Read.ai doesn't retry indefinitely.
@@ -30,7 +30,7 @@ cp .env.example .env
 
 | Variable | Where to find it |
 |---|---|
-| `READ_AI_SIGNING_KEY` | Read.ai → Apps & Integrations → Webhooks → your webhook's signing key |
+| `READ_AI_SIGNING_KEY` | Read.ai → Apps & Integrations → Webhooks → your webhook's signing key (paste the base64 string as shown; the relay decodes it before verifying) |
 | `ROUTINE_FIRE_URL` | The routine's "Call via API" trigger, the "Fire URL" field |
 | `ROUTINE_TOKEN` | Same screen, the "Token" field (shown once — copy it immediately) |
 
